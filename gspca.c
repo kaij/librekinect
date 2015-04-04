@@ -20,11 +20,6 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
- 
-/*
- * WARNING: THIS IS A PATCHED VERION OF alt_xfer(),
- * WICH RETURNS THE SECOND ISOC ENDPOINT, NOT THE FIRST!
-*/
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
@@ -610,13 +605,12 @@ static void gspca_stream_off(struct gspca_dev *gspca_dev)
 
 /*
  * look for an input transfer endpoint in an alternate setting
- * patched to get _only_ the second endpoint
  */
 static struct usb_host_endpoint *alt_xfer(struct usb_host_interface *alt,
 					  int xfer)
 {
 	struct usb_host_endpoint *ep;
-	int i, attr, ep_nr;
+	int i, attr,ep_nr;
 
 	ep_nr=0;
 	for (i = 0; i < alt->desc.bNumEndpoints; i++) {
@@ -624,13 +618,10 @@ static struct usb_host_endpoint *alt_xfer(struct usb_host_interface *alt,
 		attr = ep->desc.bmAttributes & USB_ENDPOINT_XFERTYPE_MASK;
 		if (attr == xfer
 		    && ep->desc.wMaxPacketSize != 0
-		    && usb_endpoint_dir_in(&ep->desc)){
-				if(ep_nr > 0){
-									
-					return ep;
-				}
-				else
-					ep_nr++;
+		    && usb_endpoint_dir_in(&ep->desc)) {
+			if (ep_nr > 0) {
+				return ep;
+			} else ep_nr++;
 		}
 	}
 	return NULL;
@@ -1279,6 +1270,7 @@ static void gspca_release(struct v4l2_device *v4l2_device)
 static int dev_open(struct file *file)
 {
 	struct gspca_dev *gspca_dev = video_drvdata(file);
+	int ret;
 
 	PDEBUG(D_STREAM, "[%s] open", current->comm);
 
@@ -1286,7 +1278,10 @@ static int dev_open(struct file *file)
 	if (!try_module_get(gspca_dev->module))
 		return -ENODEV;
 
-	return v4l2_fh_open(file);
+	ret = v4l2_fh_open(file);
+	if (ret)
+		module_put(gspca_dev->module);
+	return ret;
 }
 
 static int dev_close(struct file *file)
