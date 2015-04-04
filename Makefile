@@ -17,7 +17,6 @@ ifeq ($(UNAME),armv6l)
 else
 	ARCH	:= arm
 	CROSS	:= arm-linux-gnueabihf-
-	#ARMKDIR	:= ~/pi/linux
 	ARMKDIR  := /usr/src/arm/linux
 endif
 

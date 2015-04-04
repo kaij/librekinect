@@ -610,7 +610,7 @@ static struct usb_host_endpoint *alt_xfer(struct usb_host_interface *alt,
 					  int xfer)
 {
 	struct usb_host_endpoint *ep;
-	int i, attr,ep_nr;
+	int i, attr, ep_nr;
 
 	ep_nr=0;
 	for (i = 0; i < alt->desc.bNumEndpoints; i++) {
@@ -621,7 +621,9 @@ static struct usb_host_endpoint *alt_xfer(struct usb_host_interface *alt,
 		    && usb_endpoint_dir_in(&ep->desc)) {
 			if (ep_nr > 0) {
 				return ep;
-			} else ep_nr++;
+			} else {
+				ep_nr++;
+			}
 		}
 	}
 	return NULL;
